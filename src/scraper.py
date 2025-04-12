@@ -111,6 +111,7 @@ class MarketplaceScraper:
                 await page.screenshot(path="no_results.png")
                 logging.error("All extraction attempts failed")
             
+            # Results should already have cleaned URLs from extraction manager
             # Remove duplicates by URL
             unique_results = []
             seen_urls = set()

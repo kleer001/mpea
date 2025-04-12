@@ -1,11 +1,22 @@
 import logging
 
+def clean_marketplace_url(url):
+    if not url:
+        return url
+    
+    base_url_parts = url.split('?')[0]
+    
+    if base_url_parts.endswith('/'):
+        base_url_parts = base_url_parts[:-1]
+    
+    return base_url_parts
+
 class ExtractionManager:
     def __init__(self, page):
         self.page = page
     
     async def extract_listings_via_javascript(self):
-        return await self.page.evaluate("""
+        raw_results = await self.page.evaluate("""
             () => {
                 const results = [];
                 
@@ -77,6 +88,12 @@ class ExtractionManager:
                 return uniqueResults;
             }
         """)
+        
+        # Clean the URLs
+        for item in raw_results:
+            item['url'] = clean_marketplace_url(item['url'])
+            
+        return raw_results
     
     async def extract_listings_via_xpath(self):
         results = []
@@ -179,6 +196,9 @@ class ExtractionManager:
                     """, strategy)
                     
                     if listing_data and len(listing_data) > 0:
+                        # Clean the URLs
+                        for item in listing_data:
+                            item['url'] = clean_marketplace_url(item['url'])
                         results.extend(listing_data)
                         break
             
